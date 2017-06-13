@@ -60,6 +60,28 @@ public class FunctionCompositionTests {
     }
 
     @Test
+    public void applyingCurriedOps() {
+        // function with two arguments
+        Op2<Integer, Integer, Integer> add = x -> y -> x + y;
+        Op2<Double, Integer, Double> addIntToDouble = x -> y -> x + y;
+
+        int seven = add.apply( 4 ).apply( 3 );
+        double nine_five = addIntToDouble.apply( 4.5 ).apply( 5 );
+
+        assertEquals( "7", String.valueOf( seven ) );
+        assertEquals( "9.5", String.valueOf( nine_five ) );
+
+        // partial applying
+        Function<Integer, Integer> addTo5 = add.apply( 5 );
+        assertEquals( "7", String.valueOf( addTo5.apply( 2 ) ) );
+
+        // function with three arguments
+        Op3<Integer, Integer, String, String> addToString = x -> y -> z -> z + ( x + y ) ;
+        String add43Hello = addToString.apply( 4 ).apply( 3 ).apply( "Hello " );
+        assertEquals( "Hello 7", add43Hello );
+    }
+
+    @Test
     public void curryingWithComposeAndHigherComposeConstants() {
 
         Function<Long, Double> f1 = a ->  a + 2.0;
