@@ -79,6 +79,11 @@ public class FunctionCompositionTests {
         Op3<Integer, Integer, String, String> addToString = x -> y -> z -> z + ( x + y ) ;
         String add43Hello = addToString.apply( 4 ).apply( 3 ).apply( "Hello " );
         assertEquals( "Hello 7", add43Hello );
+
+        // function with three arguments
+        Op3<String, Integer, Integer, String> addToString2 = x -> y -> z -> x + ( y + z ) ;
+        add43Hello = addToString2.apply( "Hello " ).apply( 4 ).apply( 3 );
+        assertEquals( "Hello 7", add43Hello );
     }
 
     @Test
