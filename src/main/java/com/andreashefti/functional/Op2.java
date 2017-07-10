@@ -1,4 +1,4 @@
-package com.andreashefti.exercise.functional;
+package com.andreashefti.functional;
 
 import java.util.function.Function;
 
