@@ -120,6 +120,16 @@ public class FunctionalCollectionExamples {
      *  limit of the memory for the Stack within the running JVM
      */
     public void foldRecursive() {
+        List<Integer> list = list( 1, 2, 3, 4, 5 );
+
+
+
+        assertEquals( "identity12345", foldLeftRecursive( list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
+        System.out.println();
+        assertEquals( "12345identity", foldRightRecursive( list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
+
+        System.out.println();
+        assertEquals( "12345identity", foldRightRecursiveTailCall_( "", list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
 
     }
 
