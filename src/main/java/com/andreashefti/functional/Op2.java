@@ -24,5 +24,6 @@ import java.util.function.Function;
  * @param <U> The type of the second argument of the two argument-function
  * @param <R> The type of the result of the two argument-function
  */
+@FunctionalInterface
 public interface Op2<T, U, R> extends Function<T, Function<U, R>> {
 }
