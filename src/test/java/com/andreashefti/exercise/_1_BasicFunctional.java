@@ -1,12 +1,14 @@
 package com.andreashefti.exercise;
 
+import com.andreashefti.functional.Effect;
 import org.junit.Test;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.nio.file.DirectoryStream;
+import java.util.function.*;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class _1_BasicFunctional {
 
@@ -26,7 +28,7 @@ public class _1_BasicFunctional {
      * ourselves as an example, the TriFunction.
      *
      * --> There is also another way to create more then single arity functions but within only the Function functional interface
-     *     by currying the functions. How to do that is described later in this exercise.
+     *     by currying the functions. How to do that is described later in this exercise 1.4.
      *
      */
     @FunctionalInterface
@@ -42,13 +44,28 @@ public class _1_BasicFunctional {
         R apply ( T t, U u, V v );
     }
 
-    /** 1.1.1 Most used functional interfaces of Java 8
+    /** 1.1 Most used functional interfaces of Java 8
      *
      *  {@link java.util.function.Function }:
      *      Defines a polymorphic one-arity function with one function-parameter of type T
      *      and a return value of type R.
      *
-     *      Use compose to
+     *      Use the higher order function "compose" that is implemented as a default method to compose another
+     *      Function before a given Function. The composed Function must have the same return type (or substitute of)
+     *      as the given Function instances parameter type. This results in a new Function with parameter type of
+     *      the composed Function and the the original return type
+     *
+     *      Function<V,R> = Function<T,R>.compose( Function<V,T> )
+     *      Function<V,R> = Function<T,R>.compose( Function<? super V,? extends T> )
+     *
+     *      Use the higher order function "andThen" that is also implemented as default method to compose another
+     *      Function after a given Function.
+     *
+     *      Function<T,V> = Function<T,R>.compose( Function<R,V> )
+     *      Function<T,V> = Function<T,R>.compose( Function<? super R,? extends V> )
+     *
+     *      Use the static "identity" method to get an identity function that gives back what it receives.
+     *
      *
      *  {@link java.util.function.BiFunction }:
      *      Defines a polymorphic two-arity function with function-parameter of type T and U
@@ -60,22 +77,196 @@ public class _1_BasicFunctional {
      *
      *  {@link java.util.function.Predicate }:
      *      A specialisation of Function with a boolean as return type.
-     *      This is mostly used to replace a imperative if statement. There is also
+     *      This is mostly used to replace or abstract a imperative if statement.
+     *
+     *      Use the higher order function "and" to compose another Predicate with a given one by a logical and.
+     *      Use the higher order function "or" to to compose another Predicate with a given one by a logical or.
+     *      Use the function "negate" to get a new Predicate that represents a logical not of the original one.
      *
      *
      *  {@link java.util.function.Supplier }:
-     *      TODO
+     *      A Supplier is a specialised Function that has no parameter and just a return value. It supplies something.
+     *
      *
      *  {@link java.util.function.Consumer }:
-     *      TODO
+     *      A Consumer is a specialised Function that has no return value and only one parameter. It consumes a value and
+     *      dies something with it. This something mostly is an effect like logging, printing out, write to...
+     *
+     *      So if there is an effect that needs to be applied, it make sense to call it like this:
      *      {@link com.andreashefti.functional.Effect }
      *
      *  NOTE: There a lot other functional interface definitions within the JDK's java.util.function package
      *        but most of them are specialisations of the above just dealing with primitive types or higher arity.
      *
      */
+    @Test
     public void mostUsedFunctionalInterfacesOfJava8() {
-        // TODO
+
+        // NOTE: this are still implementations with anonymous inner classes. Later we will use Lambda Expressions for that
+
+        // *** java.util.function.Function:
+
+        Function<String, Integer> length = new Function<String, Integer>() {
+            @Override
+            public Integer apply( String s ) {
+                return ( s == null )? 0 : s.length();
+            }
+        };
+
+        Function<Integer, String> toString = new Function<Integer, String>() {
+            @Override
+            public String apply( Integer i ) {
+                return String.valueOf( i );
+            }
+        };
+
+        assertTrue( 5 == length.apply( "Hello" ) );
+        assertEquals( "55", toString.apply( 55 ) );
+
+        // NOTE: in Java 8 we can use the method reference operator "::" to extract already existing functions to functional interfaces
+        //       This is syntactical sugar from the Java 8 compiler and the function must match the functional interface declared
+        //       on the left side:
+
+        Function<String, Integer> lengthExtracted = String::length;
+        Function<Integer, String> toStringExtracted = String::valueOf;
+
+        assertTrue( 5 == lengthExtracted.apply( "Hello" ) );
+        assertEquals( "55", toStringExtracted.apply( 55 ) );
+
+        // * Use compose:
+
+        Function<Integer, Integer> toStringLength = length.compose( toString );
+
+        assertTrue( 4 == toStringLength.apply( 1000 ) );
+        assertTrue( 6 == toStringLength.apply( 100000 ) );
+
+        Function<String, String> lengthToString = toString.compose( length );
+
+        assertEquals( "5", lengthToString.apply( "Hello" ) );
+
+        // * Use andThen
+
+        Function<String, String> lengthAndThenToString = length.andThen( toString );
+
+        assertEquals( "5", lengthAndThenToString.apply( "Hello" ) );
+
+        Function<Integer, Integer> toStringAndThenLength = toString.andThen( length );
+
+        assertTrue( 4 == toStringAndThenLength.apply( 1000 ) );
+        assertTrue( 6 == toStringAndThenLength.apply( 100000 ) );
+
+        // * Use identity:
+
+        Function<String, String> identity = Function.identity();
+
+        assertEquals( "Hello", identity.apply( "Hello" ) );
+
+
+
+        // *** java.util.function.BiFunction
+
+        // We want to abstract a simple addition of two Integer values within functional programming.
+        // In this case we have two input parameter and one return value.
+        // A Function has only one parameter so we can use BiFunction for that:
+
+        BiFunction<Integer, Integer, Integer> addInt = new BiFunction<Integer, Integer, Integer>() {
+            @Override
+            public Integer apply( Integer i1, Integer i2 ) {
+                return i1 + i2;
+            }
+        };
+
+        assertEquals( Integer.valueOf( 5 ), addInt.apply( 2, 3 ) );
+
+        // *** java.util.function.Predicate
+
+        Predicate<String> lengthOf5 = new Predicate<String>() {
+            @Override
+            public boolean test( String s ) {
+                return ( s == null )? false : s.length() == 5;
+            }
+        };
+
+        Predicate<String> startsWithA = new Predicate<String>() {
+            @Override
+            public boolean test( String s ) {
+                return ( s == null )? false : s.startsWith( "A" );
+            }
+        };
+
+        assertTrue( lengthOf5.test( "Hello" ) );
+        assertFalse( lengthOf5.test( "Hello World" ) );
+        assertTrue( startsWithA.test( "Anton" ) );
+        assertFalse( startsWithA.test( "Hello" ) );
+
+        // NOTE: We can also use method references here for methods that returns a boolean and has no additional parameter(s):
+        Predicate<String> isEmptyExtracted = String::isEmpty;
+
+        // * use and combination
+
+        Predicate<String> lengthOf5ANDStartsWithA = lengthOf5.and( startsWithA );
+
+        assertTrue( lengthOf5ANDStartsWithA.test( "Anton" ) );
+        assertFalse( lengthOf5ANDStartsWithA.test( "Hello" ) );
+
+        // * use or combination
+
+        Predicate<String> lengthOf5ORStartsWithA = lengthOf5.or( startsWithA );
+
+        assertTrue( lengthOf5ORStartsWithA.test( "Anton" ) );
+        assertTrue( lengthOf5ORStartsWithA.test( "Hello" ) );
+        assertFalse( lengthOf5ORStartsWithA.test( "Hello World" ) );
+
+        // * use negate:
+
+        Predicate<String> notLengthOf5 = lengthOf5.negate();
+
+        assertTrue( notLengthOf5.test( "Hello World" ) );
+        assertFalse( notLengthOf5.test( "Hello" ) );
+
+
+
+        // *** java.util.function.Supplier
+
+        Supplier<String> giveAHello = new Supplier<String>() {
+            @Override
+            public String get() {
+                return "Hello";
+            }
+        };
+
+        assertEquals( "Hello", giveAHello.get() );
+
+        // NOTE: We can also use method references here for methods that has just a return type and no parameters
+        //       It is possible even for an empty constructor
+
+        Supplier<String> newString = String::new;
+
+
+        // *** java.util.function.Consumer and com.andreashefti.functional.Effect
+
+        Consumer<String> println = new Consumer<String>() {
+            @Override
+            public void accept( String s ) {
+                System.out.println( s );
+            }
+        };
+
+        Effect<String> printlnAsEffect = new Effect<String>() {
+            @Override
+            public void apply( String s ) {
+                System.out.println( s );
+            }
+        };
+
+        println.accept( "Hello" );
+        printlnAsEffect.apply( "Hello" );
+
+        // NOTE: We can also use method references here for void methods that expects one parameter of specified type:
+
+        Consumer<String> printlnExtracted = System.out::println;
+        printlnExtracted.accept( "Hallo" );
+
     }
 
     /** 1.2 Java 8. Lambda Expressions
@@ -97,8 +288,8 @@ public class _1_BasicFunctional {
             }
         };
 
-        // we can do this within a Lambda expression and remove al the boilerplate code of anonymous inner class implementations
-        // this is also more readable and understandable then the anonymous inner class implementation
+        // we can do this within a Lambda expression and remove all the boilerplate code of anonymous inner class implementations
+        // this is also more readable then the anonymous inner class implementation
         Function<String, Integer> length2 = s -> ( s == null )? 0 : s.length();
 
         assertTrue( 5 == length1.apply( "Hello" ) );
@@ -111,11 +302,16 @@ public class _1_BasicFunctional {
 
         assertTrue( 5 == add.apply( 2, 3 ) );
         assertEquals( "My Name Is: Steve", concat.apply( "My Name Is", ": ", "Steve" ) );
+
     }
 
+    /** 1.3 Higher Order Functions and Function Composition
+     *
+     *
+     *
+     */
 
-
-    /** 1.3 Closures
+    /** 1.4 Closures
      *
      * TODO
      *
@@ -124,12 +320,56 @@ public class _1_BasicFunctional {
         return price -> price * taxRate;
     }
 
-    /** 1.4 Higher Order Functions and Function Composition
-     *
-     */
+
 
     /** 1.5 Function Currying and Partial Applying
      *
      */
+    public void functionCurryingAndPartialApplying() {
+
+        // In section 1.1 we used the BiFunction to create function to add two Integer values like this:
+
+        BiFunction<Integer, Integer, Integer> addInt1 = new BiFunction<Integer, Integer, Integer>() {
+            @Override
+            public Integer apply( Integer i1, Integer i2 ) {
+                return i1 + i2;
+            }
+        };
+
+        // The same with Lambda Expression:
+        BiFunction<Integer, Integer, Integer> addInt2 = (i1, i2) -> i1 + i2;
+
+        assertEquals( Integer.valueOf( 5 ), addInt1.apply( 2, 3 ) );
+        assertEquals( Integer.valueOf( 5 ), addInt2.apply( 2, 3 ) );
+
+        // By currying functions we can also use two one parameter Functions to get to the same result:
+        // NOTE: this implementation uses anonymous inner classes to show to simplification by using lambda expressions
+
+        Function<Integer, Function<Integer, Integer>> add3 = new Function<Integer, Function<Integer, Integer>>() {
+
+            @Override
+            public Function<Integer, Integer> apply( Integer i1 ) {
+                return new Function<Integer, Integer>() {
+                    @Override
+                    public Integer apply( Integer i2 ) {
+                        return i1 + i2;
+                    }
+                };
+            }
+        };
+
+        // The same with Lambda Expression:
+        Function<Integer, Function<Integer, Integer>> add4 = i1 -> i2 -> i1 + i2;
+
+        assertEquals( Integer.valueOf( 5 ), add3.apply( 2 ).apply( 3 ) );
+        assertEquals( Integer.valueOf( 5 ), add4.apply( 3 ).apply( 2 ) );
+
+        // With the curried version of the add function we can also use partial applying:
+
+        Function<Integer, Integer> addTo100 = add3.apply( 100 );
+        assertEquals( Integer.valueOf( 102 ), addTo100.apply( 2 ) );
+        assertEquals( Integer.valueOf( 105 ), addTo100.apply( 5 ) );
+
+    }
 
 }

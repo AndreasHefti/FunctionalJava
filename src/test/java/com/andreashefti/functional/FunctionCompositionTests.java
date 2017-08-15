@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
+import static com.andreashefti.functional.FunctionUtils.Operations.*;
 
 
 public class FunctionCompositionTests {
