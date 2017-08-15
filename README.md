@@ -35,7 +35,8 @@ ourselves as an example, the TriFunction.
     }
 
 
-_There is also another way to create more then single arity functions but within only the java.util.function.Function functional interface
+_NOTE:\
+There is also another way to create more then single arity functions but within only the java.util.function.Function functional interface
 by currying the functions. How to do that is described later in this exercise._
 
 ### 1.1 Most used functional interfaces of Java 8
@@ -50,14 +51,14 @@ Function before a given Function. The composed Function must have the same retur
 as the given Function instances parameter type. This results in a new Function with parameter type of
 the composed Function and the the original return type
 
-Function<V,R> = Function<T,R>.compose( Function<V,T> )
-Function<V,R> = Function<T,R>.compose( Function<? super V,? extends T> )
+`Function<V,R> = Function<T,R>.compose( Function<V,T> )`\
+`Function<V,R> = Function<T,R>.compose( Function<? super V,? extends T> )`
  
 Use the higher order function "andThen" that is also implemented as default method to compose another
 Function after a given Function.
 
-Function<T,V> = Function<T,R>.compose( Function<R,V> )
-Function<T,V> = Function<T,R>.compose( Function<? super R,? extends V> )
+`Function<T,V> = Function<T,R>.andThen( Function<R,V> )`\
+`Function<T,V> = Function<T,R>.andThen( Function<? super R,? extends V> )`
 
 Use the static "identity" method to get an identity function that gives back what it receives.
 
@@ -95,7 +96,8 @@ dies something with it. This something mostly is an effect like logging, printin
 So if there is an effect that needs to be applied, it make sense to call it like this:
   - com.andreashefti.functional.Effect
 
-_NOTE: There a lot other functional interface definitions within the JDK's java.util.function package
+_NOTE:\
+There a lot other functional interface definitions within the JDK's java.util.function package
 but most of them are specialisations of the above just dealing with primitive types or higher arity._
 
     @Test
