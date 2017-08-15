@@ -88,13 +88,13 @@ Use the function "negate" to get a new Predicate that represents a logical not o
 A Supplier is a specialised Function that has no parameter and just a return value. It supplies something.
 
 
-- **[java.util.function.Consumer:](https://github.com/AndreasHefti/functionalJava/blob/master/src/main/java/com/andreashefti/functional/Effect.java)**
+- **java.util.function.Consumer:**
 
 A Consumer is a specialised Function that has no return value and only one parameter. It consumes a value and
 dies something with it. This something mostly is an effect like logging, printing out, write to...
 
 So if there is an effect that needs to be applied, it make sense to call it like this:
-  - com.andreashefti.functional.Effect
+  - [com.andreashefti.functional.Effect](https://github.com/AndreasHefti/functionalJava/blob/master/src/main/java/com/andreashefti/functional/Effect.java)
 
 _NOTE:\
 There a lot other functional interface definitions within the JDK's java.util.function package
