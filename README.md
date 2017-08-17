@@ -62,55 +62,15 @@ Function after a given Function.
 
 Use the static "identity" method to get an identity function that gives back what it receives.
 
-
-- **java.util.function.BiFunction:**
-
-Defines a polymorphic two-arity function with function-parameter of type T and U
-and a return value of type R.
-
-There are no functional interfaces with more arity defined in the standard JDK but
-one can implement it like the TriFunction example above or within function currying
-described later in this examples.
-
-
-- **java.util.function.Predicate:**
-
-A specialisation of Function with a boolean as return type.
-This is mostly used to replace or abstract a imperative if statement.
-
-Use the higher order function "and" to compose another Predicate with a given one by a logical and.
-Use the higher order function "or" to to compose another Predicate with a given one by a logical or.
-Use the function "negate" to get a new Predicate that represents a logical not of the original one.
-
-
-- **java.util.function.Supplier:**
-
-A Supplier is a specialised Function that has no parameter and just a return value. It supplies something.
-
-
-- **java.util.function.Consumer:**
-
-A Consumer is a specialised Function that has no return value and only one parameter. It consumes a value and
-dies something with it. This something mostly is an effect like logging, printing out, write to...
-
-So if there is an effect that needs to be applied, it make sense to call it like this:
-  - [com.andreashefti.functional.Effect](https://github.com/AndreasHefti/functionalJava/blob/master/src/main/java/com/andreashefti/functional/Effect.java)
-
-_NOTE:\
-There a lot other functional interface definitions within the JDK's java.util.function package
-but most of them are specialisations of the above just dealing with primitive types or higher arity._
-
     @Test
-    public void mostUsedFunctionalInterfacesOfJava8() {
-
-        // NOTE: this are still implementations with anonymous inner classes. Later we will use Lambda Expressions for that
+    public void _FunctionExample() {
         
-        // *** java.util.function.Function:
+        // NOTE: this are still implementations with anonymous inner classes. Later we will use Lambda Expressions for that
         
         Function<String, Integer> length = new Function<String, Integer>() {
             @Override
             public Integer apply( String s ) {
-                return ( s == null )? 0 : s.length();
+                return ( s == null ) ? 0 : s.length();
             }
         };
         
@@ -161,10 +121,20 @@ but most of them are specialisations of the above just dealing with primitive ty
         Function<String, String> identity = Function.identity();
         
         assertEquals( "Hello", identity.apply( "Hello" ) );
-        
-        
-        
-        // *** java.util.function.BiFunction
+    }
+
+
+- **java.util.function.BiFunction:**
+
+Defines a polymorphic two-arity function with function-parameter of type T and U
+and a return value of type R.
+
+There are no functional interfaces with more arity defined in the standard JDK but
+one can implement it like the TriFunction example above or within function currying
+described later in this examples.
+
+    @Test
+    public void _BiFunctionExample() {
         
         // We want to abstract a simple addition of two Integer values within functional programming.
         // In this case we have two input parameter and one return value.
@@ -179,19 +149,32 @@ but most of them are specialisations of the above just dealing with primitive ty
         
         assertEquals( Integer.valueOf( 5 ), addInt.apply( 2, 3 ) );
         
-        // *** java.util.function.Predicate
-        
+    }
+
+
+- **java.util.function.Predicate:**
+
+A specialisation of Function with a boolean as return type.
+This is mostly used to replace or abstract a imperative if statement.
+
+Use the higher order function "and" to compose another Predicate with a given one by a logical and.
+Use the higher order function "or" to to compose another Predicate with a given one by a logical or.
+Use the function "negate" to get a new Predicate that represents a logical not of the original one.
+
+
+    @Test
+    public void _PredicateExample() {
         Predicate<String> lengthOf5 = new Predicate<String>() {
             @Override
             public boolean test( String s ) {
-                return ( s == null )? false : s.length() == 5;
+                return ( s == null ) ? false : s.length() == 5;
             }
         };
         
         Predicate<String> startsWithA = new Predicate<String>() {
             @Override
             public boolean test( String s ) {
-                return ( s == null )? false : s.startsWith( "A" );
+                return ( s == null ) ? false : s.startsWith( "A" );
             }
         };
         
@@ -224,10 +207,15 @@ but most of them are specialisations of the above just dealing with primitive ty
         
         assertTrue( notLengthOf5.test( "Hello World" ) );
         assertFalse( notLengthOf5.test( "Hello" ) );
-        
-        
-        
-        // *** java.util.function.Supplier
+    }
+    
+    
+- **java.util.function.Supplier:**
+
+A Supplier is a specialised Function that has no parameter and just a return value. It supplies something.
+
+    @Test
+    public void _SupplierExample() {
         
         Supplier<String> giveAHello = new Supplier<String>() {
             @Override
@@ -243,8 +231,18 @@ but most of them are specialisations of the above just dealing with primitive ty
         
         Supplier<String> newString = String::new;
         
-        
-        // *** java.util.function.Consumer and com.andreashefti.functional.Effect
+    }
+
+- **java.util.function.Consumer:**
+
+A Consumer is a specialised Function that has no return value and only one parameter. It consumes a value and
+dies something with it. This something mostly is an effect like logging, printing out, write to...
+
+So if there is an effect that needs to be applied, it make sense to call it like this:
+[com.andreashefti.functional.Effect](https://github.com/AndreasHefti/functionalJava/blob/master/src/main/java/com/andreashefti/functional/Effect.java)
+
+    @Test
+    public void _ConsumerAndEffectExample() {
         
         Consumer<String> println = new Consumer<String>() {
             @Override
@@ -267,5 +265,35 @@ but most of them are specialisations of the above just dealing with primitive ty
         
         Consumer<String> printlnExtracted = System.out::println;
         printlnExtracted.accept( "Hallo" );
+    }
+
+- **java.lang.Runnable**
+
+     Runnable is not new and was mostly used within Thread(s). But as a functional interface, Runnable is just a
+     Consumer or Effect without any parameter. Just a program that can be run.
+      
+       
+    @Test
+    public void _RunnableExample() {
+        
+        oncePerSecond( () -> System.out.println( "second" ) );
         
     }
+    
+    static final void oncePerSecond( Runnable callback ) {
+        int i = 0;
+        while ( i < 10 ) {
+            i++;
+            callback.run();
+            try {
+                Thread.sleep( 1000 );
+            } catch( InterruptedException e ) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+_NOTE:\
+There a lot other functional interface definitions within the JDK's java.util.function package
+but most of them are specialisations of the above just dealing with primitive types or higher arity._
+

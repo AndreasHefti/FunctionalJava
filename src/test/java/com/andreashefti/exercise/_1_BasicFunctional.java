@@ -95,21 +95,23 @@ public class _1_BasicFunctional {
      *      So if there is an effect that needs to be applied, it make sense to call it like this:
      *      {@link com.andreashefti.functional.Effect }
      *
+     *  {@link java.lang.Runnable }:
+     *      Runnable is not new and was mostly used within Thread(s). But as a functional interface, Runnable is just a
+     *      Consumer or Effect without any parameter. Just a program that can be run.
+     *
      *  NOTE: There a lot other functional interface definitions within the JDK's java.util.function package
      *        but most of them are specialisations of the above just dealing with primitive types or higher arity.
      *
      */
     @Test
-    public void mostUsedFunctionalInterfacesOfJava8() {
+    public void _FunctionExample() {
 
         // NOTE: this are still implementations with anonymous inner classes. Later we will use Lambda Expressions for that
-
-        // *** java.util.function.Function:
 
         Function<String, Integer> length = new Function<String, Integer>() {
             @Override
             public Integer apply( String s ) {
-                return ( s == null )? 0 : s.length();
+                return ( s == null ) ? 0 : s.length();
             }
         };
 
@@ -162,8 +164,10 @@ public class _1_BasicFunctional {
         assertEquals( "Hello", identity.apply( "Hello" ) );
 
 
+    }
 
-        // *** java.util.function.BiFunction
+    @Test
+    public void _BiFunctionExample() {
 
         // We want to abstract a simple addition of two Integer values within functional programming.
         // In this case we have two input parameter and one return value.
@@ -178,19 +182,21 @@ public class _1_BasicFunctional {
 
         assertEquals( Integer.valueOf( 5 ), addInt.apply( 2, 3 ) );
 
-        // *** java.util.function.Predicate
+    }
 
+    @Test
+    public void _PredicateExample() {
         Predicate<String> lengthOf5 = new Predicate<String>() {
             @Override
             public boolean test( String s ) {
-                return ( s == null )? false : s.length() == 5;
+                return ( s == null ) ? false : s.length() == 5;
             }
         };
 
         Predicate<String> startsWithA = new Predicate<String>() {
             @Override
             public boolean test( String s ) {
-                return ( s == null )? false : s.startsWith( "A" );
+                return ( s == null ) ? false : s.startsWith( "A" );
             }
         };
 
@@ -223,10 +229,10 @@ public class _1_BasicFunctional {
 
         assertTrue( notLengthOf5.test( "Hello World" ) );
         assertFalse( notLengthOf5.test( "Hello" ) );
+    }
 
-
-
-        // *** java.util.function.Supplier
+    @Test
+    public void _SupplierExample() {
 
         Supplier<String> giveAHello = new Supplier<String>() {
             @Override
@@ -242,8 +248,10 @@ public class _1_BasicFunctional {
 
         Supplier<String> newString = String::new;
 
+    }
 
-        // *** java.util.function.Consumer and com.andreashefti.functional.Effect
+    @Test
+    public void _ConsumerAndEffectExample() {
 
         Consumer<String> println = new Consumer<String>() {
             @Override
@@ -266,7 +274,26 @@ public class _1_BasicFunctional {
 
         Consumer<String> printlnExtracted = System.out::println;
         printlnExtracted.accept( "Hallo" );
+    }
 
+    @Test
+    public void _RunnableExample() {
+
+        oncePerSecond( () -> System.out.println( "second" ) );
+
+    }
+
+    static final void oncePerSecond( Runnable callback ) {
+        int i = 0;
+        while ( i < 10 ) {
+            i++;
+            callback.run();
+            try {
+                Thread.sleep( 1000 );
+            } catch( InterruptedException e ) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /** 1.2 Java 8. Lambda Expressions
