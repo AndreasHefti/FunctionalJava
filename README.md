@@ -298,7 +298,7 @@ There a lot other functional interface definitions within the JDK's java.util.fu
 but most of them are specialisations of the above just dealing with primitive types or higher arity._
 
 
-###1.2 Java 8. Lambda Expressions
+### 1.2 Java 8. Lambda Expressions
 
 Lambda expressions are the new syntactical sugar of Java 8 and functional java to
 create concrete implementations of functional interfaces.
@@ -385,7 +385,7 @@ Some examples:
     }
     
     
-###1.3 Higher Order Functions and Function Composition
+### 1.3 Higher Order Functions and Function Composition
     
   A higher-order function (HOF) is a function that takes functions as its arguments and returning a function.
 
