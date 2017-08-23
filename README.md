@@ -297,3 +297,125 @@ _NOTE:\
 There a lot other functional interface definitions within the JDK's java.util.function package
 but most of them are specialisations of the above just dealing with primitive types or higher arity._
 
+
+###1.2 Java 8. Lambda Expressions
+
+Lambda expressions are the new syntactical sugar of Java 8 and functional java to
+create concrete implementations of functional interfaces.
+Instead of writing the whole anonymous inner class of a functional interface one can
+just use a Lambda expression.
+
+A Lambda expression is defined as follows:
+
+      parameter -> expression body
+
+ The parameter-part need no parenthesis if there is a single parameter
+
+      x -> expression body
+
+ The parameter-part needs parenthesis if there is no parameter ore more then one
+
+      () -> expression body
+      (x, y) -> expression body
+
+ Normally the compiler is able to interfere the type(s) but if not, the type can be declared before the parameter name
+
+      (Integer x) -> expression body
+      (Integer x, String y) -> expression body
+
+ The expression-part on the right side needs no return keyword and no curly braces if it is a single statement.
+
+      x -> x + 1;
+
+ The expression-part on the right side can be put into curly braces if there is more then one statement
+ and the return keyword can be used if there is a return value
+
+      x -> {
+          int y = x + 1;
+          y++;
+          return y;
+      };
+
+ A Lambda expression can also be used for effects (functions with no return value) which normally corresponds with
+ the functional interface Consumer (or Runnable if there is no parameter at all)
+
+      x -> System.out.println( x );
+      () -> System.out.println( "Hello" );
+
+Some examples:
+
+    @Test
+    public void lambdaExpressions() {
+        
+        // instead of doing this anonymous inner class implementations with a lot of writing and boilerplate code
+        Function<String, Integer> length1 = new Function<String, Integer>() {
+            @Override
+            public Integer apply( String s ) {
+                return ( s == null )? 0 : s.length();
+            }
+        };
+        
+        // we can do this within a Lambda expression and remove all the boilerplate code of anonymous inner class implementations
+        // this is also more readable then the anonymous inner class implementation
+        Function<String, Integer> length2 = s -> ( s == null )? 0 : s.length();
+        
+        assertTrue( 5 == length1.apply( "Hello" ) );
+        assertTrue( 5 == length2.apply( "Hello" ) );
+        
+        
+        // two- and (our self created) three-arity function can also be used within lambda expressions
+        BiFunction<Integer, Integer, Integer> add = ( t, u ) -> t + u;
+        TriFunction<String, String, String, String> concat = ( t, u, v ) -> t + u + v;
+        TriFunction<Integer, Integer, Integer, Integer> add3 = ( t, u, v ) -> t + u + v;
+        
+        assertTrue( 5 == add.apply( 2, 3 ) );
+        assertEquals( "My Name Is: Steve", concat.apply( "My Name Is", ": ", "Steve" ) );
+        assertTrue( 10 == add3.apply( 5, 3, 2 ) );
+        
+        Function<Integer, Integer> f = x ->  x + 2;
+        Function<Integer, Integer> f1 = x -> {
+            int y = x + 2;
+            y++;
+            return y;
+        };
+        
+        Consumer c = x -> System.out.println( x );
+        Runnable r = () -> System.out.println( "Hello" );
+        
+    }
+    
+    
+###1.3 Higher Order Functions and Function Composition
+    
+  A higher-order function (HOF) is a function that takes functions as its arguments and returning a function.
+
+  Looking at the Function's compose method we have something like a higher-order method to compose two Function's
+  We can use this method on a Function instance to compose it with another Function to get a new Function
+  that is the composition of both function.
+
+      Function<Integer, Integer> triple = x -> x * 3;
+      Function<Integer, Integer> square = x -> x * x;
+        
+      Function<Integer, Integer> squareTriple = triple.compose( square );
+      Function<Integer, Integer> tripleSquare = square.compose( triple );
+        
+      assertTrue( 12 == squareTriple.apply( 2 ) );
+      assertTrue( 36 == tripleSquare.apply( 2 ) );
+
+ We can also write the compose as a "stand alone" polymorphic higher-order function like that:
+
+      public static final <T, U, V> Function<V, U> compose( Function<T, U> f, Function <V, T> g ) {
+          return x -> f.apply( g.apply( x ) );
+      }
+
+ And use this compose like that: NOTE that the second argument of the compose is computed first
+
+      Function<Integer, Integer> squareTriple = compose( triple, square );
+      Function<Integer, Integer> tripleSquare = compose( square, triple );
+        
+      assertTrue( 12 == squareTriple.apply( 2 ) );
+      assertTrue( 36 == tripleSquare.apply( 2 ) );
+
+ NOTE: Function composition is a powerful concept but since every single function composition in Java is resulting
+       in a method call when executed, there is the possibility of a stack overflow when composing to many functions into
+       one function.
