@@ -25,7 +25,7 @@ ourselves as an example, the TriFunction.
     interface TriFunction<T, U, V, R> {
     
         /** Defines a function with three parameters and one return type
-         *
+    
          * @param t parameter value of type T
          * @param u parameter value of type U
          * @param v parameter value of type V
@@ -416,6 +416,172 @@ Some examples:
       assertTrue( 12 == squareTriple.apply( 2 ) );
       assertTrue( 36 == tripleSquare.apply( 2 ) );
 
- NOTE: Function composition is a powerful concept but since every single function composition in Java is resulting
-       in a method call when executed, there is the possibility of a stack overflow when composing to many functions into
-       one function.
+
+But this is still a method for composing functions. What if we want to have a Function that can be used to compose
+Functions. This higher-order Function should be a general one to use it globally like a constant.
+Therefore this higher-order Function should'nt have any parameter.
+We will create such a higher-order Function in chapter 1.5 Function Currying and Partial Applying
+     
+_NOTE:\
+Function composition is a powerful concept but since every single function composition in Java is resulting
+in a method call when executed, there is the possibility of a stack overflow when composing to many functions into
+one function._
+       
+       
+### 1.4 Closures
+
+  A Closure us a function or functional method that not only depends on its input arguments but also on parameter
+  that belongs to the enclosing scope of the function or functional method.
+
+  For example, you we can have a final (or implicitly final) value "taxRate" that can be accessed/used by a
+  following lambda expression. In this case the lambda expression closes over the "taxRate" value which is int the
+  scope of the lambda expression. This is a closure.
+
+      public void someMethod() {
+          double taxRate = 2;
+          Function<Double, Double> closure = price -> price * taxRate;
+      }
+
+  The "taxRate" has not to be declared final. If not it is interpreted as implicitly final and it is not possible
+  to change the value of "taxRate" afterwards (compiler error on the lambda expression is shown)
+
+  This is only true for local variables but not for class variables.
+
+      double taxRate = 2;
+        
+      public void someMethod() {
+          Function<Double, Double> closure = price -> price * taxRate;
+          taxRate = 3;
+      }
+
+  This will compile but is not pure functional because it is not guaranteed that the function gives always
+  the same result for the same input attribute.
+
+  An other way to define a Closure in Java is to define a method that expects one ore more values as attributes
+  and returns a Function that uses this attributes. Such a method create a function that closes over the given
+  attributes and values at the time it is called. The variables outside the closed function that is the Closure
+  my change its value(s).
+
+      double taxRate = 2;
+        
+      static Function<Double, Double> closureExample( double tax ) {
+          return price -> price * tax;
+      }
+        
+      Function<Double, Double> closure = closureExample( taxRate );
+      taxRate = 3;
+
+  _NOTE:\
+  that Closures can cause problems on refactorings or when functions are passed to other functions as arguments
+  because the dependencies of Closures are not necessarily clear or easy to see or define._
+  
+  
+### 1.5 Function Currying and Partial Applying
+
+ With Function Currying we can use the one arity function of Java and compose it with the way like:
+
+      Function<Integer, Function<Integer, Integer>>
+
+ So that we have now a composed function on that we can partial apply the values. With this we can also
+ get rid of the use of BFunction. This is called Function Currying.
+ In section 1.1 we used the BiFunction to create function to add two Integer values like this:
+
+      BiFunction<Integer, Integer, Integer> add = new BiFunction<Integer, Integer, Integer>() {
+          @Override
+          public Integer apply( Integer i1, Integer i2 ) {
+              return i1 + i2;
+          }
+      };
+
+ The same with Lambda Expression:
+
+      BiFunction<Integer, Integer, Integer> add = (i1, i2) -> i1 + i2;
+
+ Now with only using the Function by implementing within anonymous inner classes, we can do this:
+
+      Function<Integer, Function<Integer, Integer>> add = new Function<Integer, Function<Integer, Integer>>() {
+
+          @Override
+          public Function<Integer, Integer> apply( Integer i1 ) {
+              return new Function<Integer, Integer>() {
+                  @Override
+                  public Integer apply( Integer i2 ) {
+                      return i1 + i2;
+                  }
+              };
+          }
+      };
+
+ The same with Lambda Expression:
+
+      Function<Integer, Function<Integer, Integer>> add = i1 -> i2 -> i1 + i2;
+
+  This will give us a curried function where we are able to apply the values one by one like so:
+
+      add.apply( 2 ).apply( 3 );  // = 5
+
+ It would be nice to partial apply values like in more functional languages, for example scala like this;
+
+      add( 2 )( 3 )
+
+ But this unfortunately is not possible in Java. And also we have a problem with the types. For example if we have
+ a 3 arity function, we have to declare it like:
+
+      Function<Integer, Function<Integer, Function<Integer, Integer>>> f = ...
+      Function<T, Function<U, Function<V, R>>> f = ...
+
+ And so on. But we can easily define some functional interfaces which extends form Function and curry the function
+ with a specified arity like this example for arity 3:
+
+      interface Op3<T, U, V, R> extends Function<T, Function<U, Function<V, R>>> {}
+
+ Using this interface with lambda expression will reduce the need of type declaration a bit:
+
+      Op3<Integer, Integer, Integer, Integer> add3 = i1 -> i2 -> i3 -> i1 + i2 + i3;
+      addThree.apply( 2 ).apply( 3 ).apply( 5 );  // = 10
+
+ But with partial applying we will end up with the need of the full type declaration again:
+
+      Function<Integer, Function<Integer, Integer>> addTo2 = addThree.apply( 2 );
+      Function<Integer, Integer> addTo5 = addTo2.apply( 3 );
+
+
+ With function curring and partial applying we can now also define a global constant higher order function
+ to compose functions with compose or andThen:
+
+      public static final <T, U, V> Function<Function<U, V>,
+                                      Function<Function<T, U>,
+                                          Function<T, V>>> COMPOSE() {
+          return f -> g -> x -> f.apply( g.apply( x ) );
+      }
+
+      public static final <T, U, V> Function<Function<T, U>,
+                                      Function<Function<U, V>,
+                                          Function<T, V>>> AND_THEN() {
+           return f -> g -> x -> g.apply( f.apply( x ) );
+      }
+
+ But to use this we also have to declare the types.
+
+      FLib.<Integer, String, Integer>COMPOSE().apply( length ).apply( intToString ).apply( 234 )  // = 3
+      FLib.<Integer, String, Integer>AND_THEN().apply( intToString ).apply( length ).apply( 234 ) ) // = 3
+
+ This is not really practical, particularly if we have some library class that declare constant higher order functions
+ and we want to static import them and use them within prefixes, this is not possible because we need to declare
+ the types. At least we have to write library class name ( FLib in the example above ) followed by the type
+ declaration.
+
+ We can also define some global static higher order methods to partial apply arguments to a two arity curried function
+ and one to switch the arguments of a two arity curried function like this:
+
+      <A, B, C> Function<B, C> partialA( A a, Function<A, Function<B, C>> f ) {
+          return f.apply( a );
+      }
+      
+      <A, B, C> Function<A, C> partialB( B b, Function<A, Function<B, C>> f ) {
+          return a -> f.apply( a ).apply( b );
+      }
+
+      public static <T, U, V> Function<U, Function<T, V>> reverseArgs( Function<T,Function<U, V>> f ) {
+          return u -> t -> f.apply( t ).apply( u );
+      }

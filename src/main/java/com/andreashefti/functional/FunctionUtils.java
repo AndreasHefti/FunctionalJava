@@ -103,8 +103,10 @@ public abstract class FunctionUtils {
         @FunctionalInterface
         interface Op2<T, U, R> extends Function<T, Function<U, R>> {}
 
+        @FunctionalInterface
         interface Op3<T, U, V, R> extends Function<T, Function<U, Function<V, R>>> {}
 
+        @FunctionalInterface
         interface Op4<T, U, V, W, R> extends Function<T, Function<U, Function<V, Function<W, R>>>> {}
 
     }
