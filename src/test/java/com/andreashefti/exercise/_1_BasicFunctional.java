@@ -1,15 +1,14 @@
 package com.andreashefti.exercise;
 
 import com.andreashefti.functional.Effect;
-import com.andreashefti.functional.FunctionUtils;
 import org.junit.Test;
 
 import java.util.function.*;
 
+import static com.andreashefti.functional.Ops.*;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static com.andreashefti.functional.FunctionUtils.Operations.*;
 
 public class _1_BasicFunctional {
 

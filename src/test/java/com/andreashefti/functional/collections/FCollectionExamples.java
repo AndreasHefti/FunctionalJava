@@ -1,20 +1,19 @@
-package com.andreashefti.functional;
+package com.andreashefti.functional.collections;
 
+import com.andreashefti.functional.Effect;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntConsumer;
 
-import static com.andreashefti.functional.FunctionUtils.Collection.*;
+import static com.andreashefti.functional.collections.FCollections.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
  * Created by andreashefti on 04.07.17.
  */
-public class FunctionalCollectionExamples {
+public class FCollectionExamples {
 
     @Test
     public void creatingImmutableLists() {
@@ -129,7 +128,7 @@ public class FunctionalCollectionExamples {
         assertEquals( "12345identity", foldRightRecursive( list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
 
         System.out.println();
-        assertEquals( "12345identity", foldRightRecursiveTailCall_( "", list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
+        assertEquals( "12345identity", foldRightRecursiveTailCall( list, "identity", s -> i -> { System.out.println( "i: " + i + " s: " + s ); return s + i; } ) );
 
     }
 
