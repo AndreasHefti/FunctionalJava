@@ -2,6 +2,7 @@ package com.andreashefti.functional;
 
 import org.junit.Test;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
@@ -9,9 +10,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by andreashefti on 16.08.17.
@@ -64,5 +68,11 @@ public class FunctionalTests {
 
         System.out.println( dates2 );
 
+    }
+
+    @Test
+    public void testFRUtils() {
+        Stream.of("A", "", "B").filter( FRUtils._String::isNotEmpty).count();
+        Stream.of("A", "", "B").filter( FRUtils.not(String::isEmpty)).count();
     }
 }

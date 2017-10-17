@@ -21,7 +21,7 @@ public abstract class FunctionUtils {
     }
 
     /** A higher order function to compose two functions. This is implemented itself as a function an
-     *  can be used like a constant to compose functions ans also partial apply the functions to compose.
+     *  can be used like a constant to compose functions and also partial apply the functions to compose.
      *  <p>
      *  See FunctionCompositionTests:curryingWithComposeAndHigherComposeConstants
      *  <p>
@@ -68,7 +68,5 @@ public abstract class FunctionUtils {
                                                     Function<T, V>>> higherAndThen() {
         return f -> g -> x -> g.apply( f.apply( x ) );
     }
-
-
 
 }
